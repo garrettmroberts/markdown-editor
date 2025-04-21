@@ -83,7 +83,7 @@ const Navigator = () => {
   };
 
   const openSettings = () => {
-    console.log('openSettings is not yet implemented.');
+    console.error('openSettings is not yet implemented.');
   };
 
   const handleContextMenu = (e: React.MouseEvent) => {

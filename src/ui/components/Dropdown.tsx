@@ -68,7 +68,6 @@ const Dropdown: FC<DropdownProps> = ({
   };
 
   const handleContextMenuAction = (action: string) => {
-    console.log(`${action} action triggered for ${activeElement}`);
     if (action === 'create-folder') {
       setModal(ModalTypes.CREATE_FOLDER);
     }

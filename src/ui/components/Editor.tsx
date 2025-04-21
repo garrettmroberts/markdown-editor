@@ -11,6 +11,18 @@ const Editor: React.FC = () => {
   const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
+    const fetchData = async () => {
+      const data = await window.electron.readFile(`${activeNotebook}/${activeFolder}/${activeFile}`);
+      console.log(data)
+      setFileContents(data);
+      setIsDirty(false);
+    }
+
+    fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeFile]);
+
+  useEffect(() => {
     if (isDirty) {
       document.title = `Markdown Notes ✏️`;
     } else {
@@ -25,8 +37,9 @@ const Editor: React.FC = () => {
     }
 
     try {
-      const filePath = `src/data/${activeNotebook}/${activeFolder}/${activeFile}`;
-      window.api.writeFile(filePath, fileContents);
+      const filePath = `${activeNotebook}/${activeFolder}`;
+      console.log("DEBUG", filePath)
+      window.electron.writeFile(filePath, activeFile, fileContents);
       setSaveStatus('File saved successfully');
       setIsDirty(false);
 
@@ -45,13 +58,15 @@ const Editor: React.FC = () => {
   });
 
   useEffect(() => {
-    if (activeNotebook === '' || activeFolder === '' || activeFile === '')
-      return;
-    setFileContents(
-      window.api.readFile(
-        `src/data/${activeNotebook}/${activeFolder}/${activeFile}`
-      ) || ''
-    );
+    const fetchData = async () => {
+      if (activeNotebook === '' || activeFolder === '' || activeFile === '')
+        return;
+      const filePath = `${activeNotebook}/${activeFolder}/${activeFile}`;
+      const fileContent = await window.electron.readFile(filePath);
+      setFileContents(fileContent);
+    }
+
+    fetchData();
   }, [activeNotebook, activeFolder, activeFile]);
 
   const textAreaRef = useRef<HTMLTextAreaElement>(null);

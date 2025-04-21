@@ -1,14 +1,25 @@
 const electron = require("electron");
 
 electron.contextBridge.exposeInMainWorld("electron", {
-  subscribeStatistics: (callback) => {
-    ipcOn("statistics", (stats) => {
-      callback(stats);
-    });
+  listDirectories: (directoryPath?: string) => {
+    return electron.ipcRenderer.invoke("listDirectories", directoryPath);
   },
-
-  listFiles: () => {
-    return ipcInvoke("listFiles");
+  listFiles: (filePath?: string) => {
+    return electron.ipcRenderer.invoke("listFiles", filePath);
+  },
+  readFile: (filePath: string) => {
+    return electron.ipcRenderer.invoke("readFile", filePath);
+  },
+  writeFile: (filePath: string, fileName: string, fileContents: string) => {
+    return electron.ipcRenderer.invoke(
+      "writeFile",
+      filePath,
+      fileName,
+      fileContents
+    );
+  },
+  createDir: (directoryPath: string) => {
+    return electron.ipcRenderer.invoke("createDir", directoryPath);
   },
 } satisfies Window["electron"]);
 

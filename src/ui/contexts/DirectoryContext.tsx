@@ -143,55 +143,160 @@ export const DirectoryProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [state, dispatch] = useReducer(directoryReducer, initialState);
 
-  // // Fetch initial data
-  // useEffect(() => {
-  //   try {
-  //     const notebooks = window.api.listFiles('src/data');
+  // Fetch initial data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const notebooks =  await window.electron.listDirectories();
+  
+        if (notebooks.length > 0) {
+          dispatch({ type: 'SET_NOTEBOOKS', payload: notebooks });
+          dispatch({ type: 'SET_ACTIVE_NOTEBOOK', payload: notebooks[0] });
+  
+          const folders = await window.electron.listDirectories(`${notebooks[0]}`);
+          if (folders.length > 0) {
+            dispatch({ type: 'SET_FOLDERS', payload: folders });
+            dispatch({ type: 'SET_ACTIVE_FOLDER', payload: folders[0] });
+  
+            const files = await window.electron.listFiles(
+              `${notebooks[0]}/${folders[0]}`
+            );
+            if (files.length > 0) {
+              dispatch({ type: 'SET_FILES', payload: files });
+              dispatch({ type: 'SET_ACTIVE_FILE', payload: files[0] });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error loading directory structure: ', error);
+      }
+    }
 
-  //     if (notebooks.length > 0) {
-  //       dispatch({ type: 'SET_NOTEBOOKS', payload: notebooks });
-  //       dispatch({ type: 'SET_ACTIVE_NOTEBOOK', payload: notebooks[0] });
+    fetchData();
+  }, []);
 
-  //       const folders = window.api.listFiles(`src/data/${notebooks[0]}`);
-  //       if (folders.length > 0) {
-  //         dispatch({ type: 'SET_FOLDERS', payload: folders });
-  //         dispatch({ type: 'SET_ACTIVE_FOLDER', payload: folders[0] });
+  const setActiveNotebook = async (notebook: string) => {
+    if (!state.notebooks.includes(notebook)) {
+      console.error(`Notebook ${notebook} does not exist.`);
+      return;
+    }
+    dispatch({ type: 'SET_ACTIVE_NOTEBOOK', payload: notebook });
+    const newFolders = await window.electron.listDirectories(`${notebook}`);
+    dispatch({ type: 'SET_FOLDERS', payload: newFolders });
 
-  //         const files = window.api.listFiles(
-  //           `src/data/${notebooks[0]}/${folders[0]}`
-  //         );
-  //         if (files.length > 0) {
-  //           dispatch({ type: 'SET_FILES', payload: files });
-  //           dispatch({ type: 'SET_ACTIVE_FILE', payload: files[0] });
-  //         }
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.error('Error loading directory structure: ', error);
-  //   }
-  // }, []);
+    if (newFolders.length === 0) {
+      dispatch({ type: 'SET_ACTIVE_FOLDER', payload: '' });
+      dispatch({ type: 'SET_FILES', payload: [] });
+      dispatch({ type: 'SET_ACTIVE_FILE', payload: '' });
+      return;
+    }
+
+    const newActiveFolder = newFolders.includes(state.activeFolder)
+      ? state.activeFolder
+      : newFolders[0];
+
+    dispatch({ type: 'SET_ACTIVE_FOLDER', payload: newActiveFolder });
+
+    const newFiles = await  window.electron.listFiles(
+      `${notebook}/${newActiveFolder}`
+    );
+    dispatch({ type: 'SET_FILES', payload: newFiles });
+
+    if (newFiles.length > 0) {
+      dispatch({ type: 'SET_ACTIVE_FILE', payload: newFiles[0] });
+    } else {
+      dispatch({ type: 'SET_ACTIVE_FILE', payload: '' });
+    }
+  };
+
+  const setActiveFolder = async (folder: string) => {
+    if (!state.folders.includes(folder)) {
+      console.error(`Folder "${folder}" does not exist`);
+      return;
+    }
+
+    dispatch({ type: 'SET_ACTIVE_FOLDER', payload: folder });
+
+    const newFiles = await window.electron.listFiles(
+      `${state.activeNotebook}/${folder}`
+    );
+    dispatch({ type: 'SET_FILES', payload: newFiles });
+
+    if (newFiles.length > 0) {
+      dispatch({ type: 'SET_ACTIVE_FILE', payload: newFiles[0] });
+    } else {
+      dispatch({ type: 'SET_ACTIVE_FILE', payload: '' });
+    }
+  };
+
+  const setActiveFile = (file: string) => {
+    if (!state.files.includes(file)) {
+      console.error(`File "${file}" does not exist`);
+      return;
+    }
+    dispatch({ type: 'SET_ACTIVE_FILE', payload: file });
+  };
+
+  const createNotebook = async function (notebook: string): Promise<void> {
+    try {
+      const notebookPath = `${notebook}`;
+      console.log(notebookPath)
+      const success = await window.electron.createDir(notebookPath);
+      console.log(success)
+
+      if (success) {
+        dispatch({ type: 'CREATE_NOTEBOOK', payload: notebook });
+        dispatch({ type: 'SET_ACTIVE_NOTEBOOK', payload: notebook });
+        dispatch({ type: 'SET_FOLDERS', payload: [] });
+        dispatch({ type: 'SET_FILES', payload: [] });
+        dispatch({ type: 'SET_ACTIVE_FOLDER', payload: '' });
+        dispatch({ type: 'SET_ACTIVE_FILE', payload: '' });
+      } else {
+        console.error(`Failed to create notebook: ${notebook}`);
+      }
+    } catch (error) {
+      console.error('Error creating notebook:', error);
+    }
+  };
+
+  const createFolder = async function (folder: string): Promise<void> {
+    try {
+      const folderPath = `src/data/${state.activeNotebook}/${folder}`;
+      const success = await window.electron.createDir(folderPath);
+      if (success) {
+        dispatch({ type: 'CREATE_FOLDER', payload: folder });
+        dispatch({ type: 'SET_ACTIVE_FOLDER', payload: folder });
+        dispatch({ type: 'SET_FILES', payload: [] });
+        dispatch({ type: 'SET_ACTIVE_FILE', payload: '' });
+      }
+    } catch (error) {
+      console.error('Error creating folder:', error);
+    }
+  };
+
+  const createFile = async function (file: string): Promise<void> {
+    try {
+      const filePath = `${state.activeNotebook}/${state.activeFolder}`;
+      const fileName = file.endsWith('.md') ? file : `${file}.md`;
+      const success = await window.electron.writeFile(filePath, fileName, '');
+      if (success) {
+        dispatch({ type: 'CREATE_FILE', payload: fileName });
+        dispatch({ type: 'SET_ACTIVE_FILE', payload: fileName });
+      }
+    } catch (error) {
+      console.error('Error creating file:', error);
+    }
+  };
 
   const value: DirectoryContextType = {
     ...state,
     dispatch,
-    setActiveNotebook: function (notebook: string): void {
-      throw new Error('Function not implemented.');
-    },
-    setActiveFolder: function (folder: string): void {
-      throw new Error('Function not implemented.');
-    },
-    setActiveFile: function (file: string): void {
-      throw new Error('Function not implemented.');
-    },
-    createNotebook: function (notebook: string): void {
-      throw new Error('Function not implemented.');
-    },
-    createFolder: function (folder: string): void {
-      throw new Error('Function not implemented.');
-    },
-    createFile: function (file: string): void {
-      throw new Error('Function not implemented.');
-    },
+    setActiveNotebook,
+    setActiveFolder,
+    setActiveFile,
+    createNotebook,
+    createFolder,
+    createFile,
     removeNotebook: function (notebook: string): void {
       throw new Error('Function not implemented.');
     },

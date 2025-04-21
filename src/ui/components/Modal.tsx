@@ -1,4 +1,4 @@
-import { FC, MouseEvent, useEffect, useState } from 'react';
+import { MouseEvent, useEffect, useState } from 'react';
 import { ModalTypes } from '../contexts/UIContext';
 import { useUIContext } from '../hooks/useUIContext';
 import { IoMdClose } from 'react-icons/io';
@@ -9,7 +9,6 @@ const Modal = () => {
   const { createNotebook, createFolder, createFile } = useDirectoryContext();
   const [isVisible, setIsVisible] = useState(false);
 
-  const [selectedType, setSelectedType] = useState('notebook');
   const [name, setName] = useState('');
 
   useEffect(() => {

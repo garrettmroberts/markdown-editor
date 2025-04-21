@@ -1,8 +1,13 @@
 import { app, BrowserWindow } from "electron";
 import path from "path";
 import { ipcMainHandle, isDev } from "./util.js";
-import { pollResources } from "./resourceManager.js";
-import { listFiles } from "./fileManager.js";
+import {
+  listDirectories,
+  listFiles,
+  createDir,
+  writeFile,
+  readFile,
+} from "./fileManager.js";
 import { getPreloadPath } from "./pathResolver.js";
 
 app.on("ready", () => {
@@ -20,9 +25,31 @@ app.on("ready", () => {
     mainWindow.loadFile(path.join(app.getAppPath(), "/dist-react/index.html"));
   }
 
-  pollResources(mainWindow);
+  ipcMainHandle("listFiles", (filePath?: string) => {
+    console.log("listFiles called with path:", filePath);
+    return listFiles(filePath);
+  });
 
-  ipcMainHandle("listFiles", () => {
-    return listFiles();
+  ipcMainHandle("listDirectories", (filePath?: string) => {
+    console.log("listDirectories called with path:", filePath);
+    return listDirectories(filePath);
+  });
+
+  ipcMainHandle("createDir", (dirPath: string) => {
+    console.log("createDir called with path:", dirPath);
+    return createDir(dirPath);
+  });
+
+  ipcMainHandle(
+    "writeFile",
+    (filePath: string, fileName: string, data: string) => {
+      console.log("writeFile called with path:", filePath);
+      return writeFile(filePath, fileName, data);
+    }
+  );
+
+  ipcMainHandle("readFile", (filePath: string) => {
+    console.log("readFile called with path:", filePath);
+    return readFile(filePath);
   });
 });

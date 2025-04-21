@@ -6,9 +6,9 @@ export function isDev(): boolean {
 
 export function ipcMainHandle<Key extends keyof EventPayloadMapping>(
   key: string,
-  handler: () => EventPayloadMapping[Key]
+  handler: (...args: any) => EventPayloadMapping[Key]
 ) {
-  ipcMain.handle(key, () => handler());
+  ipcMain.handle(key, (_event, ...args) => handler(...args));
 }
 
 export function ipcWebContentsSend<Key extends keyof EventPayloadMapping>(

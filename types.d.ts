@@ -1,16 +1,21 @@
-type Statistics = {
-  cpuUsage: number;
-  ramUsage: number;
-  storageUsage: number;
-};
 type EventPayloadMapping = {
-  statistics: Statistics;
   listFiles: string[];
+  listDirectories: string[];
+  readFile: string;
+  createDir: string;
+  writeFile: boolean;
 };
 
 interface Window {
   electron: {
-    listFiles: () => Promise<string[]>;
-    subscribeStatistics: (callback: (statistics: Statistics) => void) => void;
+    listFiles: (dirPath?: string) => Promise<string[]>;
+    listDirectories: (dirPath?: string) => Promise<string[]>;
+    readFile: (filePath: string) => Promise<string>;
+    createDir: (dirPath: string) => Promise<string>;
+    writeFile(
+      filePath: string,
+      fileName: string,
+      fileContents: string
+    ): boolean;
   };
 }
