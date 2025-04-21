@@ -1,0 +1,18 @@
+@use '../abstracts/variables' as *;
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+html,
+body {
+  overflow: hidden;
+  height: 100%;
+  background-color: $clr-surface-a0;
+}
+
+main {
+  background-color: $clr-surface-a0;
+  color: $clr-light-a0;
+  height: 100vh;
+  display: flex;
+  align-items: stretch;
+  font-family: 'space-mono', monospace;
+}

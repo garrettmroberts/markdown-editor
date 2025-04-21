@@ -1,0 +1,120 @@
+@use '../abstracts/variables' as *;
+
+.dropdown-container {
+  position: relative;
+}
+
+.dropdown {
+  margin: 12px 12px 0px 12px;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.2s ease;
+  border-radius: 6px;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+
+    .dropdown__header__title {
+      transform: translateX(5px);
+      color: $clr-primary-a40;
+    }
+
+    .dropdown__chevron {
+      border-top-color: $clr-primary-a40;
+    }
+  }
+
+  &:focus {
+    outline: 2px solid $clr-primary-a40;
+    outline-offset: 2px;
+  }
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+
+    &__label {
+      font-size: 0.8rem;
+      color: $clr-light-a0;
+      font-weight: 500;
+      margin: 0 0 4px 0;
+    }
+
+    &__title {
+      color: $clr-primary-a20;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition:
+        color 0.2s ease-out,
+        transform 0.2s ease-out;
+    }
+  }
+
+  &__chevron {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid $clr-primary-a20;
+    transition:
+      transform 0.2s ease-out,
+      border-top-color 0.2s ease-out;
+
+    &--open {
+      transform: translateY(-50%) rotate(180deg);
+    }
+  }
+
+  &__dropdown {
+    margin: 0px 12px 8px 12px;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transform: translateY(-10px);
+    transition:
+      max-height 0.3s cubic-bezier(0, 1, 0, 1),
+      opacity 0.2s ease-out,
+      transform 0.2s ease-out,
+      margin-top 0.2s ease-out;
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.2);
+
+    &--visible {
+      max-height: 500px; // Setting a specific height for better animation
+      opacity: 1;
+      transform: translateY(0);
+      margin-top: 4px;
+      transition:
+        max-height 0.5s cubic-bezier(1, 0, 1, 0),
+        opacity 0.3s ease-out,
+        transform 0.3s ease-out;
+    }
+
+    &__ele {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      cursor: pointer;
+      padding: 10px 12px 10px 7px;
+      transition: all 0.2s ease;
+      color: $clr-light-a0;
+      border-radius: 4px;
+      margin: 4px 6px;
+
+      &:hover {
+        color: $clr-primary-a40;
+        background-color: rgba(255, 255, 255, 0.05);
+        padding-left: 12px;
+      }
+
+      &:focus {
+        outline: 2px solid $clr-primary-a40;
+        outline-offset: 2px;
+      }
+    }
+  }
+}

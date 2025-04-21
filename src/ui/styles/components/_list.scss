@@ -1,0 +1,71 @@
+@use '../abstracts/variables' as *;
+
+.list-container {
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 4px 8px;
+  flex: 1;
+
+  &--empty {
+    background: none;
+  }
+}
+
+.list {
+  margin: 12px 12px 0px 12px;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.2s ease;
+  border-radius: 6px;
+
+  &:hover {
+    .list__header__title {
+      position: relative;
+      transform: translateX(5px);
+      color: $clr-primary-a40;
+      overflow: hidden;
+    }
+  }
+
+  &__header {
+    color: $clr-primary-a50;
+    font-size: 0.8rem;
+    cursor: default;
+  }
+
+  &__content {
+    margin: 0px 12px 8px 12px;
+    overflow: hidden;
+    border-radius: 6px;
+
+    &__element {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      cursor: pointer;
+      padding: 4px;
+      transition: all 0.2s ease;
+      color: $clr-light-a0;
+      border-radius: 4px;
+
+      & > span {
+        white-space: nowrap;
+      }
+
+      &:hover {
+        color: $clr-primary-a40;
+        background-color: $clr-surface-a10;
+        padding-left: 12px;
+      }
+
+      &:focus {
+        outline: 2px solid $clr-primary-a40;
+        outline-offset: 2px;
+      }
+    }
+  }
+}
+
+.active {
+  color: $clr-primary-a0;
+}
