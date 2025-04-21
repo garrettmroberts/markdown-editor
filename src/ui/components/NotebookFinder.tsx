@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { LuNotebook, LuNotebookPen } from 'react-icons/lu';
 import { useDirectoryContext } from '../hooks/useDirectoryContext';
 

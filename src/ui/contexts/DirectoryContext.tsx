@@ -297,22 +297,22 @@ export const DirectoryProvider: React.FC<{ children: ReactNode }> = ({
     createNotebook,
     createFolder,
     createFile,
-    removeNotebook: function (notebook: string): void {
+    removeNotebook: function (): void {
       throw new Error('Function not implemented.');
     },
-    removeFolder: function (folder: string): void {
+    removeFolder: function (): void {
       throw new Error('Function not implemented.');
     },
-    removeFile: function (file: string): void {
+    removeFile: function (): void {
       throw new Error('Function not implemented.');
     },
-    updateNotebook: function (oldName: string, newName: void): void {
+    updateNotebook: function (): void {
       throw new Error('Function not implemented.');
     },
-    updateFolder: function (oldName: string, newName: string): void {
+    updateFolder: function (): void {
       throw new Error('Function not implemented.');
     },
-    updateFile: function (oldName: string, newName: string): void {
+    updateFile: function (): void {
       throw new Error('Function not implemented.');
     }
   };
