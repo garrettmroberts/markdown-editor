@@ -13,7 +13,6 @@ const Editor: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       const data = await window.electron.readFile(`${activeNotebook}/${activeFolder}/${activeFile}`);
-      console.log(data)
       setFileContents(data);
       setIsDirty(false);
     }
@@ -38,7 +37,6 @@ const Editor: React.FC = () => {
 
     try {
       const filePath = `${activeNotebook}/${activeFolder}`;
-      console.log("DEBUG", filePath)
       window.electron.writeFile(filePath, activeFile, fileContents);
       setSaveStatus('File saved successfully');
       setIsDirty(false);

@@ -68,8 +68,6 @@ export function writeFile(
       filePath
     );
 
-    console.log("DOCPATH", documentsPath);
-
     const filePathToCreate = path.join(documentsPath, fileName);
     fs.writeFileSync(filePathToCreate, data || "");
 

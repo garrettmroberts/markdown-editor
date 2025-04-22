@@ -240,9 +240,7 @@ export const DirectoryProvider: React.FC<{ children: ReactNode }> = ({
   const createNotebook = async function (notebook: string): Promise<void> {
     try {
       const notebookPath = `${notebook}`;
-      console.log(notebookPath)
       const success = await window.electron.createDir(notebookPath);
-      console.log(success)
 
       if (success) {
         dispatch({ type: 'CREATE_NOTEBOOK', payload: notebook });
@@ -261,7 +259,7 @@ export const DirectoryProvider: React.FC<{ children: ReactNode }> = ({
 
   const createFolder = async function (folder: string): Promise<void> {
     try {
-      const folderPath = `src/data/${state.activeNotebook}/${folder}`;
+      const folderPath = `${state.activeNotebook}/${folder}`;
       const success = await window.electron.createDir(folderPath);
       if (success) {
         dispatch({ type: 'CREATE_FOLDER', payload: folder });

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { HiLightningBolt } from 'react-icons/hi';
 import {
   MdChevronLeft,
@@ -6,7 +6,6 @@ import {
   MdSettings,
   MdAdd
 } from 'react-icons/md';
-import React from 'react';
 import { useDirectoryContext } from '../hooks/useDirectoryContext';
 import Dropdown from './Dropdown';
 import List from './List';
@@ -24,12 +23,33 @@ const Navigator = () => {
     setActiveFolder,
     files,
     activeFile,
-    setActiveFile
+    setActiveFile,
   } = useDirectoryContext();
   const { setModal } = useUIContext();
   const [navWidth, setNavWidth] = useState(250);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+
+  const [contextMenu, setContextMenu] = useState({
+    visible: false,
+    x: 0,
+    y: 0,
+    type: '' // 'folder' or 'file'
+  });
+
+  const contextMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (contextMenuRef.current && !contextMenuRef.current.contains(event.target as Node)) {
+        setContextMenu(prev => ({ ...prev, visible: false }));
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
 
   const draggingRef = useRef(false);
   const mouseXRef = useRef(0);
@@ -86,9 +106,25 @@ const Navigator = () => {
     console.error('openSettings is not yet implemented.');
   };
 
-  const handleContextMenu = (e: React.MouseEvent) => {
+  const handleContextMenu = (e: React.MouseEvent, type: 'folder' | 'file') => {
     e.preventDefault();
-    setModal(ModalTypes.CREATE_FILE);
+    
+    setContextMenu({
+      visible: true,
+      x: e.clientX,
+      y: e.clientY,
+      type
+    });
+  };
+
+  const handleContextMenuAction = (action: string) => {
+    setContextMenu(prev => ({ ...prev, visible: false }));
+    
+    if (action === 'create-file') {
+      setModal(ModalTypes.CREATE_FILE);
+    } else if (action === 'create-folder') {
+      setModal(ModalTypes.CREATE_FOLDER);
+    }
   };
 
   return (
@@ -130,7 +166,7 @@ const Navigator = () => {
               setActiveFolder(selected);
             }}
             label="Folders"
-            onContextMenu={handleContextMenu}
+            onContextMenu={(e) => handleContextMenu(e, 'folder')}
           />
           <List
             elements={files}
@@ -139,6 +175,7 @@ const Navigator = () => {
               setActiveFile(selected);
             }}
             label="Files"
+            onContextMenu={(e) => handleContextMenu(e, 'file')}
           />
         </div>
       </div>
@@ -165,6 +202,34 @@ const Navigator = () => {
         className="navigator__sizer"
         onMouseDown={(e) => handleMouseDown(e)}
       />
+      {contextMenu.visible && (
+        <div 
+          ref={contextMenuRef}
+          className="context-menu context-menu--visible"
+          style={{
+            position: 'fixed',
+            top: contextMenu.y,
+            left: contextMenu.x
+          }}
+        >
+          <ul className="context-menu__list">
+            {contextMenu.type === 'folder' && (
+              <li
+                className="context-menu__item"
+                onClick={() => handleContextMenuAction('create-file')}
+              >
+                Create file
+              </li>
+            )}
+            <li
+              className="context-menu__item context-menu__item--danger"
+              onClick={() => handleContextMenuAction('delete')}
+            >
+              Delete
+            </li>
+          </ul>
+        </div>
+      )}
     </div>
   );
 };
