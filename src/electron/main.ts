@@ -7,6 +7,7 @@ import {
   createDir,
   writeFile,
   readFile,
+  deleteElement,
 } from "./fileManager.js";
 import { getPreloadPath } from "./pathResolver.js";
 
@@ -52,5 +53,10 @@ app.on("ready", () => {
   ipcMainHandle("readFile", (filePath: string) => {
     console.log("readFile called with path:", filePath);
     return readFile(filePath);
+  });
+
+  ipcMainHandle("deleteFile", (filePath: string) => {
+    console.log("deleteFile called with path:", filePath);
+    return deleteElement(filePath);
   });
 });

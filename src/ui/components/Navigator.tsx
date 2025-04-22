@@ -24,6 +24,7 @@ const Navigator = () => {
     files,
     activeFile,
     setActiveFile,
+    dispatch
   } = useDirectoryContext();
   const { setModal } = useUIContext();
   const [navWidth, setNavWidth] = useState(250);
@@ -34,7 +35,8 @@ const Navigator = () => {
     visible: false,
     x: 0,
     y: 0,
-    type: '' // 'folder' or 'file'
+    type: '', // 'folder' or 'file'
+    targetItem: '' // the name of the folder or file
   });
 
   const contextMenuRef = useRef<HTMLDivElement>(null);
@@ -106,24 +108,67 @@ const Navigator = () => {
     console.error('openSettings is not yet implemented.');
   };
 
-  const handleContextMenu = (e: React.MouseEvent, type: 'folder' | 'file') => {
+  const handleContextMenu = (e: React.MouseEvent, type: 'folder' | 'file', item: string) => {
     e.preventDefault();
     
     setContextMenu({
       visible: true,
       x: e.clientX,
       y: e.clientY,
-      type
+      type,
+      targetItem: item
     });
   };
 
-  const handleContextMenuAction = (action: string) => {
+  const handleContextMenuAction = async (action: string) => {
+    const { type, targetItem } = contextMenu;
     setContextMenu(prev => ({ ...prev, visible: false }));
     
     if (action === 'create-file') {
       setModal(ModalTypes.CREATE_FILE);
     } else if (action === 'create-folder') {
       setModal(ModalTypes.CREATE_FOLDER);
+    } else if (action === 'delete') {
+      const pathToDelete = type === 'file' 
+        ? `${activeNotebook}/${activeFolder}/${targetItem}` 
+        : `${activeNotebook}/${targetItem}`;
+      
+      const success = await window.electron.deleteElement(pathToDelete);
+      
+      if (success) {
+        if (type === 'file') {
+          const updatedFiles = files.filter(file => file !== targetItem);
+          dispatch({ type: 'SET_FILES', payload: updatedFiles });
+          
+          if (activeFile === targetItem) {
+            dispatch({ type: 'SET_ACTIVE_FILE', payload: updatedFiles.length > 0 ? updatedFiles[0] : '' });
+          }
+        } 
+        else if (type === 'folder') {
+          const updatedFolders = folders.filter(folder => folder !== targetItem);
+          dispatch({ type: 'SET_FOLDERS', payload: updatedFolders });
+          
+          if (activeFolder === targetItem) {
+            const newActiveFolder = updatedFolders.length > 0 ? updatedFolders[0] : '';
+            dispatch({ type: 'SET_ACTIVE_FOLDER', payload: newActiveFolder });
+            
+            if (newActiveFolder) {
+              const newFiles = await window.electron.listFiles(
+                `${activeNotebook}/${newActiveFolder}`
+              );
+              dispatch({ type: 'SET_FILES', payload: newFiles });
+              
+              dispatch({ 
+                type: 'SET_ACTIVE_FILE', 
+                payload: newFiles.length > 0 ? newFiles[0] : '' 
+              });
+            } else {
+              dispatch({ type: 'SET_FILES', payload: [] });
+              dispatch({ type: 'SET_ACTIVE_FILE', payload: '' });
+            }
+          }
+        }
+      }
     }
   };
 
@@ -166,7 +211,7 @@ const Navigator = () => {
               setActiveFolder(selected);
             }}
             label="Folders"
-            onContextMenu={(e) => handleContextMenu(e, 'folder')}
+            onContextMenu={(e, item) => handleContextMenu(e, 'folder', item)}
           />
           <List
             elements={files}
@@ -175,7 +220,7 @@ const Navigator = () => {
               setActiveFile(selected);
             }}
             label="Files"
-            onContextMenu={(e) => handleContextMenu(e, 'file')}
+            onContextMenu={(e, item) => handleContextMenu(e, 'file', item)}
           />
         </div>
       </div>

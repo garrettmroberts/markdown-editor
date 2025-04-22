@@ -17,5 +17,6 @@ interface Window {
       fileName: string,
       fileContents: string
     ): boolean;
+    deleteElement: (filePath: string) => Promise<boolean>;
   };
 }

@@ -21,6 +21,9 @@ electron.contextBridge.exposeInMainWorld("electron", {
   createDir: (directoryPath: string) => {
     return electron.ipcRenderer.invoke("createDir", directoryPath);
   },
+  deleteElement: (filePath: string) => {
+    return electron.ipcRenderer.invoke("deleteFile", filePath);
+  },
 } satisfies Window["electron"]);
 
 function ipcInvoke<Key extends keyof EventPayloadMapping>(

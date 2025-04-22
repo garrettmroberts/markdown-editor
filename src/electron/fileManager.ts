@@ -93,3 +93,18 @@ export function readFile(filePath: string): string | undefined {
     return undefined;
   }
 }
+
+export function deleteElement(filePath: string): boolean {
+  try {
+    const documentsPath = path.join(
+      app.getPath("documents"),
+      "mdNotes",
+      filePath
+    );
+    fs.rmSync(documentsPath, { recursive: true, force: true });
+    return true;
+  } catch (err) {
+    console.error("Error deleting file:", err);
+    return false;
+  }
+}

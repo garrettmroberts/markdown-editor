@@ -6,7 +6,8 @@ interface ListProps {
   activeElement: string;
   onSelect: (element: string) => void;
   label: string;
-  onContextMenu?: (e: React.MouseEvent) => void;
+  onContextMenu: (e: React.MouseEvent, item: string) => void;
+
 }
 
 const List: FC<ListProps> = ({
@@ -35,7 +36,8 @@ const List: FC<ListProps> = ({
               onClick={() => onSelect(ele)}
               role="option"
               aria-selected={false}
-              onContextMenu={onContextMenu}
+              onContextMenu={(e) => onContextMenu(e, ele)}
+              data-key={ele}
             >
               {activeElement === ele ? (
                 <LuFolderOpen aria-hidden="true" />
