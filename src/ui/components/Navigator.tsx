@@ -3,7 +3,6 @@ import { HiLightningBolt } from 'react-icons/hi';
 import {
   MdChevronLeft,
   MdChevronRight,
-  MdSettings,
   MdAdd
 } from 'react-icons/md';
 import { useDirectoryContext } from '../hooks/useDirectoryContext';
@@ -104,9 +103,9 @@ const Navigator = () => {
     setModal(ModalTypes.CREATE_NOTEBOOK);
   };
 
-  const openSettings = () => {
-    console.error('openSettings is not yet implemented.');
-  };
+  // const openSettings = () => {
+  //   console.error('openSettings is not yet implemented.');
+  // };
 
   const handleContextMenu = (e: React.MouseEvent, type: 'folder' | 'file', item: string) => {
     e.preventDefault();
@@ -234,13 +233,13 @@ const Navigator = () => {
           >
             <MdAdd />
           </button>
-          <button
+          {/* <button
             className="navigator__footer__actions__button"
             aria-label="Settings"
             onClick={openSettings}
           >
             <MdSettings />
-          </button>
+          </button> */}
         </div>
       </div>
       <div

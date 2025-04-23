@@ -38,7 +38,7 @@ interface DirectoryContextType extends DirectoryState {
   setActiveFolder: (folder: string) => void;
   setActiveFile: (file: string) => void;
   createNotebook: (notebook: string) => void;
-  createFolder: (folder: string) => void;
+  createFolder: (folder: string, notebook?: string) => void;
   createFile: (folder: string) => void;
   removeNotebook: (notebook: string) => void;
   removeFolder: (folder: string) => void;
@@ -257,15 +257,27 @@ export const DirectoryProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  const createFolder = async function (folder: string): Promise<void> {
+  const createFolder = async function (folder: string, notebook?: string): Promise<void> {
     try {
-      const folderPath = `${state.activeNotebook}/${folder}`;
+      const targetNotebook = notebook || state.activeNotebook;
+      const folderPath = `${targetNotebook}/${folder}`;
       const success = await window.electron.createDir(folderPath);
+      
       if (success) {
-        dispatch({ type: 'CREATE_FOLDER', payload: folder });
-        dispatch({ type: 'SET_ACTIVE_FOLDER', payload: folder });
-        dispatch({ type: 'SET_FILES', payload: [] });
-        dispatch({ type: 'SET_ACTIVE_FILE', payload: '' });
+        if (targetNotebook === state.activeNotebook) {
+          dispatch({ type: 'CREATE_FOLDER', payload: folder });
+          dispatch({ type: 'SET_ACTIVE_FOLDER', payload: folder });
+          dispatch({ type: 'SET_FILES', payload: [] });
+          dispatch({ type: 'SET_ACTIVE_FILE', payload: '' });
+        } else {
+          dispatch({ type: 'SET_ACTIVE_NOTEBOOK', payload: targetNotebook });
+          
+          const folders = await window.electron.listDirectories(targetNotebook);
+          dispatch({ type: 'SET_FOLDERS', payload: folders });
+          dispatch({ type: 'SET_ACTIVE_FOLDER', payload: folder });
+          dispatch({ type: 'SET_FILES', payload: [] });
+          dispatch({ type: 'SET_ACTIVE_FILE', payload: '' });
+        }
       }
     } catch (error) {
       console.error('Error creating folder:', error);

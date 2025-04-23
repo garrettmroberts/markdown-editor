@@ -2,6 +2,7 @@ import { useState, FC, useRef, useEffect } from 'react';
 import { LuNotebook, LuNotebookPen } from 'react-icons/lu';
 import { useUIContext } from '../hooks/useUIContext';
 import { ModalTypes } from '../contexts/UIContext';
+import { useDirectoryContext } from '../hooks/useDirectoryContext';
 
 interface DropdownProps {
   elements: string[];
@@ -18,14 +19,16 @@ const Dropdown: FC<DropdownProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const [contextMenuVisible, setContextMenuVisible] = useState(false);
-  const [contextMenuPosition, setContextMenuPosition] = useState({
+  const [contextMenu, setContextMenu] = useState({
+    visible: false,
     x: 0,
-    y: 0
+    y: 0,
+    targetItem: ''
   });
   const contextMenuRef = useRef<HTMLDivElement>(null);
 
   const { setModal } = useUIContext();
+  const { notebooks, dispatch } = useDirectoryContext();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -49,9 +52,9 @@ const Dropdown: FC<DropdownProps> = ({
       if (
         contextMenuRef.current &&
         !contextMenuRef.current.contains(event.target as Node) &&
-        contextMenuVisible
+        contextMenu.visible
       ) {
-        setContextMenuVisible(false);
+        setContextMenu(prev => ({ ...prev, visible: false }));
       }
     };
 
@@ -59,19 +62,55 @@ const Dropdown: FC<DropdownProps> = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [contextMenuVisible]);
+  }, [contextMenu.visible]);
 
-  const handleContextMenu = (event: React.MouseEvent) => {
+  const handleContextMenu = (event: React.MouseEvent, notebook: string = activeElement) => {
     event.preventDefault();
-    setContextMenuPosition({ x: event.clientX, y: event.clientY });
-    setContextMenuVisible(true);
+    setContextMenu({
+      visible: true,
+      x: event.clientX,
+      y: event.clientY,
+      targetItem: notebook
+    });
   };
 
-  const handleContextMenuAction = (action: string) => {
+  const handleContextMenuAction = async (action: string) => {
     if (action === 'create-folder') {
       setModal(ModalTypes.CREATE_FOLDER);
+    } else if (action === 'delete') {
+      try {
+        const notebookToDelete = contextMenu.targetItem;
+        const isActiveNotebook = notebookToDelete === activeElement;
+        
+        const success = await window.electron.deleteElement(notebookToDelete);
+        
+        if (success) {
+          // Remove the notebook from state
+          const updatedNotebooks = notebooks.filter(notebook => notebook !== notebookToDelete);
+          dispatch({ type: 'SET_NOTEBOOKS', payload: updatedNotebooks });
+          
+          // Check if we have notebooks left
+          if (updatedNotebooks.length === 0) {
+            // No notebooks left, clear everything
+            dispatch({ type: 'SET_ACTIVE_NOTEBOOK', payload: '' });
+            dispatch({ type: 'SET_FOLDERS', payload: [] });
+            dispatch({ type: 'SET_ACTIVE_FOLDER', payload: '' });
+            dispatch({ type: 'SET_FILES', payload: [] });
+            dispatch({ type: 'SET_ACTIVE_FILE', payload: '' });
+          } 
+          // Only update active notebook if we deleted the active one
+          else if (isActiveNotebook) {
+            dispatch({ type: 'SET_ACTIVE_NOTEBOOK', payload: updatedNotebooks[0] });
+            
+            const folders = await window.electron.listDirectories(updatedNotebooks[0]);
+            dispatch({ type: 'SET_FOLDERS', payload: folders });
+          }
+        }
+      } catch (error) {
+        console.error('Error deleting notebook:', error);
+      }
+      setContextMenu(prev => ({ ...prev, visible: false }));
     }
-    setContextMenuVisible(false);
   };
 
   return (
@@ -92,7 +131,7 @@ const Dropdown: FC<DropdownProps> = ({
           }
         }}
       >
-        <div className="dropdown__header" onContextMenu={handleContextMenu}>
+        <div className="dropdown__header" onContextMenu={(e) => handleContextMenu(e)}>
           <p className="dropdown__header__label">{label}</p>
           <div className="dropdown__header__title">
             <LuNotebookPen aria-hidden="true" />
@@ -126,6 +165,7 @@ const Dropdown: FC<DropdownProps> = ({
               tabIndex={isOpen ? 0 : -1}
               aria-selected={false}
               data-testid="dropdown-list-element"
+              onContextMenu={(e) => handleContextMenu(e, ele)}
             >
               <LuNotebook aria-hidden="true" />
               <span>{ele}</span>
@@ -134,11 +174,11 @@ const Dropdown: FC<DropdownProps> = ({
       </div>
 
       <div
-        className={`context-menu ${contextMenuVisible ? 'context-menu--visible' : ''}`}
+        className={`context-menu ${contextMenu.visible ? 'context-menu--visible' : ''}`}
         style={{
           position: 'fixed',
-          top: contextMenuPosition.y,
-          left: contextMenuPosition.x
+          top: contextMenu.y,
+          left: contextMenu.x
         }}
         ref={contextMenuRef}
       >
