@@ -10,19 +10,30 @@ export enum ModalTypes {
   NONE = 'none'
 }
 
-interface UIState {
-  modal: ModalTypes;
+type ModalData = {
+  type: ModalTypes;
+  data?: {
+    notebook?: string;
+    folder?: string;
+  }
 }
 
-type UIAction = { type: 'SET_MODAL'; payload: ModalTypes };
+interface UIState {
+  modal: ModalData;
+}
+
+type UIAction = { type: 'SET_MODAL'; payload: ModalData };
 
 interface UIContextType extends UIState {
   dispatch: Dispatch<UIAction>;
-  setModal: (modal: ModalTypes) => void;
+  setModal: (modal: ModalData) => void;
 }
 
 const initialState: UIState = {
-  modal: ModalTypes.NONE
+  modal: {
+    type: ModalTypes.NONE,
+    data: undefined
+  }
 };
 
 const uiReducer = (state: UIState, action: UIAction): UIState => {
@@ -45,7 +56,7 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const value: UIContextType = {
     ...state,
     dispatch,
-    setModal: (modal: ModalTypes) => {
+    setModal: (modal: ModalData) => {
       dispatch({ type: 'SET_MODAL', payload: modal });
     }
   };

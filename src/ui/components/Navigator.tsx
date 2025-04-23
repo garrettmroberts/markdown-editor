@@ -25,7 +25,7 @@ const Navigator = () => {
     setActiveFile,
     dispatch
   } = useDirectoryContext();
-  const { setModal } = useUIContext();
+  const { setModal, modal } = useUIContext();
   const [navWidth, setNavWidth] = useState(250);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -100,7 +100,12 @@ const Navigator = () => {
   };
 
   const openCreationModal = () => {
-    setModal(ModalTypes.CREATE_NOTEBOOK);
+    setModal({
+      type: ModalTypes.CREATE_NOTEBOOK,
+      data: {
+        notebook: contextMenu.targetItem
+      }
+    });
   };
 
   // const openSettings = () => {
@@ -124,9 +129,23 @@ const Navigator = () => {
     setContextMenu(prev => ({ ...prev, visible: false }));
     
     if (action === 'create-file') {
-      setModal(ModalTypes.CREATE_FILE);
+      console.log(targetItem)
+      setModal({
+        type: ModalTypes.CREATE_FILE,
+        data: {
+          ...modal.data,
+          folder: type === 'folder' ? targetItem : activeFolder,
+          notebook: activeNotebook
+        }
+      });
     } else if (action === 'create-folder') {
-      setModal(ModalTypes.CREATE_FOLDER);
+      setModal({
+        type: ModalTypes.CREATE_FOLDER,
+        data: {
+          ...modal.data,
+          notebook: activeNotebook
+        }
+      });
     } else if (action === 'delete') {
       const pathToDelete = type === 'file' 
         ? `${activeNotebook}/${activeFolder}/${targetItem}` 

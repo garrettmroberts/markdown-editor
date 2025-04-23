@@ -39,7 +39,7 @@ interface DirectoryContextType extends DirectoryState {
   setActiveFile: (file: string) => void;
   createNotebook: (notebook: string) => void;
   createFolder: (folder: string, notebook?: string) => void;
-  createFile: (folder: string) => void;
+  createFile: (file: string, folder: string) => void;
   removeNotebook: (notebook: string) => void;
   removeFolder: (folder: string) => void;
   removeFile: (file: string) => void;
@@ -284,14 +284,21 @@ export const DirectoryProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  const createFile = async function (file: string): Promise<void> {
+  const createFile = async function (file: string, folder: string): Promise<void> {
     try {
-      const filePath = `${state.activeNotebook}/${state.activeFolder}`;
+      const filePath = `${state.activeNotebook}/${folder}`;
       const fileName = file.endsWith('.md') ? file : `${file}.md`;
       const success = await window.electron.writeFile(filePath, fileName, '');
       if (success) {
-        dispatch({ type: 'CREATE_FILE', payload: fileName });
-        dispatch({ type: 'SET_ACTIVE_FILE', payload: fileName });
+        if (folder != state.activeFolder) {
+          dispatch({ type: 'SET_ACTIVE_FOLDER', payload: folder });
+          const files = await window.electron.listFiles(filePath);
+          dispatch({ type: 'SET_FILES', payload: files });
+          dispatch({ type: 'SET_ACTIVE_FILE', payload: fileName });
+        } else {
+          dispatch({ type: 'CREATE_FILE', payload: fileName });
+          dispatch({ type: 'SET_ACTIVE_FILE', payload: fileName });
+        }
       }
     } catch (error) {
       console.error('Error creating file:', error);

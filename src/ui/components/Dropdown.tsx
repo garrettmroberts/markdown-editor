@@ -75,8 +75,14 @@ const Dropdown: FC<DropdownProps> = ({
   };
 
   const handleContextMenuAction = async (action: string) => {
+    setContextMenu(prev => ({ ...prev, visible: false }));
     if (action === 'create-folder') {
-      setModal(ModalTypes.CREATE_FOLDER);
+      setModal({
+        type: ModalTypes.CREATE_FOLDER,
+        data: {
+          notebook: contextMenu.targetItem
+        }
+      });
     } else if (action === 'delete') {
       try {
         const notebookToDelete = contextMenu.targetItem;
@@ -109,7 +115,6 @@ const Dropdown: FC<DropdownProps> = ({
       } catch (error) {
         console.error('Error deleting notebook:', error);
       }
-      setContextMenu(prev => ({ ...prev, visible: false }));
     }
   };
 

@@ -1,8 +1,19 @@
+import { ModalTypes } from '../contexts/UIContext';
 import { useDirectoryContext } from '../hooks/useDirectoryContext';
+import { useUIContext } from '../hooks/useUIContext';
 
 const GettingStarted = () => {
-  const toggleCreateNotebookModal = () => {};
   const { notebooks, folders, files } = useDirectoryContext();
+  const { setModal } = useUIContext();
+
+  const toggleCreateNotebookModal = () => {
+    setModal({
+      type: ModalTypes.CREATE_NOTEBOOK,
+      data: {
+        notebook: undefined
+      }
+    });
+  };
 
   return (
     <div className="getting-started-container">
