@@ -24,6 +24,14 @@ electron.contextBridge.exposeInMainWorld("electron", {
   deleteElement: (filePath: string) => {
     return electron.ipcRenderer.invoke("deleteFile", filePath);
   },
+  renameDir: (directoryPath: string, oldName: string, newName: string) => {
+    return electron.icpRenderer.invoke(
+      "renameDir",
+      directoryPath,
+      oldName,
+      newName
+    );
+  },
 } satisfies Window["electron"]);
 
 function ipcInvoke<Key extends keyof EventPayloadMapping>(

@@ -108,3 +108,34 @@ export function deleteElement(filePath: string): boolean {
     return false;
   }
 }
+
+export function renameDir(
+  directoryPath: string,
+  oldName: string,
+  newName: string
+): boolean {
+  try {
+    const oldPath = path.join(
+      app.getPath("documents"),
+      "mdNotes",
+      directoryPath,
+      oldName
+    );
+
+    const newPath = path.join(
+      app.getPath("documents"),
+      "mdNotes",
+      directoryPath,
+      newName
+    );
+
+    fs.rename(oldPath, newPath, (err) => {
+      console.error(err);
+    });
+
+    return true;
+  } catch (err) {
+    console.error("Err renaming directory:", err);
+    return false;
+  }
+}

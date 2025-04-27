@@ -8,6 +8,7 @@ import {
   writeFile,
   readFile,
   deleteElement,
+  renameDir,
 } from "./fileManager.js";
 import { getPreloadPath } from "./pathResolver.js";
 
@@ -59,4 +60,17 @@ app.on("ready", () => {
     console.log("deleteFile called with path:", filePath);
     return deleteElement(filePath);
   });
+
+  ipcMainHandle(
+    "renameDir",
+    (directoryPath: string, oldName: string, newName: string) => {
+      console.log(
+        "renameDir called with path:",
+        directoryPath,
+        " and newName:",
+        newName
+      );
+      return renameDir(directoryPath, oldName, newName);
+    }
+  );
 });

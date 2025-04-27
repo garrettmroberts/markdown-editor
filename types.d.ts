@@ -18,5 +18,10 @@ interface Window {
       fileContents: string
     ): boolean;
     deleteElement: (filePath: string) => Promise<boolean>;
+    renameDir: (
+      dirPath: string,
+      oldName: string,
+      newName: string
+    ) => Promise<boolean>;
   };
 }
